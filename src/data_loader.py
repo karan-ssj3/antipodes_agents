@@ -158,10 +158,11 @@ class FinancialDataLoader:
     
     def _create_sample_fallback_data(self, tickers: List[str], start_date: date, end_date: date):
         """Create realistic sample data for fallback"""
-        print("📊 Creating sample fallback data...")
+        print("📊 Creating enhanced fallback data...")
         
         # Ensure data directory exists
         Path("data").mkdir(exist_ok=True)
+        extended_end = end_date + timedelta(days=120) 
         
         # Base prices for each ticker (approximate recent values)
         base_prices = {
