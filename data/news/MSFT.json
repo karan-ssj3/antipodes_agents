@@ -1,0 +1,26 @@
+[
+    {
+      "title": "Microsoft Azure AI Revenue Surges 45% Year-Over-Year",
+      "snippet": "Microsoft reported exceptional growth in Azure AI services, with $8.2 billion in quarterly revenue from AI workloads and Copilot enterprise.",
+      "date": "2025-06-08",
+      "source": "Reuters"
+    },
+    {
+      "title": "Microsoft 365 Copilot Reaches 10 Million Subscribers",
+      "snippet": "Enterprise adoption of Microsoft's AI-powered Copilot has reached 10 million paid subscribers, generating $2 billion in annual recurring revenue.",
+      "date": "2025-06-15",
+      "source": "Wall Street Journal"
+    },
+    {
+      "title": "Gaming Division Faces Headwinds as Cloud Gaming Grows",
+      "snippet": "While traditional Xbox sales declined 8%, Microsoft's cloud gaming service Game Pass Ultimate grew 25% with 35 million subscribers.",
+      "date": "2025-06-22",
+      "source": "GamesBeat"
+    },
+    {
+      "title": "Microsoft Announces $20B Green Data Center Initiative",
+      "snippet": "Microsoft commits to building carbon-negative data centers powered by renewable energy, investing $20 billion over five years.",
+      "date": "2025-06-26",
+      "source": "TechCrunch"
+    }
+  ]
