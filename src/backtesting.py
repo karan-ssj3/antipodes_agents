@@ -152,18 +152,31 @@ class BacktestEngine:
         
         ticker_prices = market_data.get_ticker_prices(ticker)
         
-        # Find prices closest to start and end dates
-        start_price = None
-        end_price = None
+        if not ticker_prices:
+            print(f"  ⚠️  No price data for {ticker}")
+            return 0.0
         
-        for price in sorted(ticker_prices, key=lambda p: p.date):
-            if price.date >= start_date and start_price is None:
+        # Sort prices by date
+        sorted_prices = sorted(ticker_prices, key=lambda p: p.date)
+        
+        # Find closest start price (first price on or after start_date)
+        start_price = None
+        for price in sorted_prices:
+            if price.date >= start_date:
                 start_price = price.close_price
+                break
+        
+        # Find closest end price (last price on or before end_date)
+        end_price = None
+        for price in reversed(sorted_prices):
             if price.date <= end_date:
                 end_price = price.close_price
+                break
         
         if start_price is None or end_price is None:
-            print(f"  ⚠️  Missing price data for {ticker} in backtest period")
+            print(f"  ⚠️  Missing price data for {ticker} in backtest period ({start_date} to {end_date})")
+            if sorted_prices:
+                print(f"      Available: {sorted_prices[0].date} to {sorted_prices[-1].date}")
             return 0.0
         
         return (end_price - start_price) / start_price
