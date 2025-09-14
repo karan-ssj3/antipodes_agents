@@ -93,10 +93,13 @@ class Coordinator(BaseAgent):
             weight = weights[agent_name]
             weighted_sum += numeric_rating * weight
             
-        # Convert back to rating
-        if weighted_sum >= 1.5:
+        # Convert back to rating using config thresholds
+        buy_threshold = config.trading.buy_threshold * 2  # 0.7 * 2 = 1.4
+        sell_threshold = config.trading.sell_threshold * 2  # 0.3 * 2 = 0.6
+        
+        if weighted_sum >= buy_threshold:
             final_rating = Rating.BUY
-        elif weighted_sum <= 0.5:
+        elif weighted_sum <= sell_threshold:
             final_rating = Rating.SELL
         else:
             final_rating = Rating.HOLD
@@ -111,3 +114,5 @@ class Coordinator(BaseAgent):
                 fundamental_data: List[FundamentalData], as_of_date: date) -> List[AgentRating]:
         """Not used - coordinator uses coordinate() method instead"""
         return []
+    
+    
