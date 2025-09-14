@@ -9,6 +9,10 @@ from datetime import datetime, date
 from pathlib import Path
 import sys
 import traceback
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Add src to path for imports
 sys.path.append(str(Path(__file__).parent / "src"))
