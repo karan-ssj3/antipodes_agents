@@ -26,7 +26,7 @@ class AgentWorkflowState(TypedDict):
     market_data: MarketData
     news_data: NewsData
     fundamental_data: List[FundamentalData]
-    backtest_data: MarketData  # Extended data for backtesting
+    backtest_data: MarketData  
     
     # Agent outputs
     valuation_ratings: List[AgentRating]
@@ -86,7 +86,7 @@ class AgentWorkflow:
     def run(self, as_of_date: date) -> AgentWorkflowState:
         """Execute the complete multi-agent workflow"""
         
-        print("🚀 Starting LangGraph Multi-Agent Workflow")
+        print("Starting LangGraph Multi-Agent Workflow")
         print("=" * 50)
         
         # Initialize state
@@ -109,7 +109,7 @@ class AgentWorkflow:
     def _data_loader_node(self, state: AgentWorkflowState) -> AgentWorkflowState:
         """Node: Load all required data"""
         
-        print("📊 Node: Data Loader")
+        print(" Node: Data Loader")
         
         try:
             as_of_date = state["as_of_date"]
@@ -121,10 +121,11 @@ class AgentWorkflow:
                 config.trading.tickers, start_date, as_of_date, as_of_date
             )
             
-            # Load extended data (for backtesting)
-            extended_end = as_of_date + timedelta(days=config.trading.forward_window_days + 10)
+            # Load future data (for backtesting only - no redundant historical data)
+            future_start = as_of_date + timedelta(days=1)
+            future_end = as_of_date + timedelta(days=config.trading.forward_window_days + 10)
             backtest_data = price_loader.fetch_stock_prices(
-                config.trading.tickers, start_date, extended_end, extended_end
+                config.trading.tickers, future_start, future_end, future_end
             )
             
             # Load news and fundamental data

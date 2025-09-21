@@ -489,11 +489,12 @@ def test_backtest(as_of_date: datetime):
         config.trading.tickers, start_date, decision_date, decision_date
     )
     
-    # Load extended data (including future data - for backtesting only)
-    print("📈 Loading extended data for backtesting...")
-    extended_end = decision_date + timedelta(days=config.trading.forward_window_days + 10)
+    # Load future data (for backtesting only - no redundant historical data)
+    print("📈 Loading future data for backtesting...")
+    future_start = decision_date + timedelta(days=1)
+    future_end = decision_date + timedelta(days=config.trading.forward_window_days + 10)
     backtest_data = price_loader.fetch_stock_prices(
-        config.trading.tickers, start_date, extended_end, extended_end  # No leakage filter
+        config.trading.tickers, future_start, future_end, future_end
     )
     
     news_loader = NewsLoader()
