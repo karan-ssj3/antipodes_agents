@@ -23,6 +23,7 @@ from src.workflow import AgentWorkflow
 from src.config import config
 from src.models import CoordinatorResult
 from src.experiments.ab_runner import VariantConfig, run_rolling_ab
+from src.experiments.store import save_variant_config, list_saved_configs, load_config
 
 
 def _run_workflow(as_of_date: date) -> dict:
@@ -264,7 +265,8 @@ def main() -> None:
                             config.trading.buy_threshold = float(changes.get("buy_threshold", config.trading.buy_threshold))
                             config.trading.sell_threshold = float(changes.get("sell_threshold", config.trading.sell_threshold))
                             config.trading.forward_window_days = int(changes.get("forward_window_days", config.trading.forward_window_days))
-                            st.success("Variant promoted to runtime config. Re-run analysis to evaluate.")
+                            path = save_variant_config("Promoted Variant", changes, meta={"avg_uplift": f"{avg_uplift:.4f}"})
+                            st.success(f"Variant promoted and saved: {path}")
                         except Exception:
                             st.error("Failed to promote variant.")
                 elif not changes:
@@ -276,6 +278,25 @@ def main() -> None:
                 st.error(f"A/B run failed: {e}")
 
     st.sidebar.caption("Tip: Results also saved under outputs/ as CSV/PNG")
+
+    st.sidebar.divider()
+    st.sidebar.subheader("Config Versions")
+    saved = list_saved_configs()
+    options = [f"{s.timestamp} - {s.name}" for s in saved]
+    selected = st.sidebar.selectbox("Load saved config", options=options if options else ["None"], index=0 if options else None)
+    if options and st.sidebar.button("Apply selected config"):
+        try:
+            idx = options.index(selected)
+            changes = load_config(saved[idx].path)
+            config.trading.valuation_weight = float(changes.get("valuation_weight", config.trading.valuation_weight))
+            config.trading.sentiment_weight = float(changes.get("sentiment_weight", config.trading.sentiment_weight))
+            config.trading.fundamental_weight = float(changes.get("fundamental_weight", config.trading.fundamental_weight))
+            config.trading.buy_threshold = float(changes.get("buy_threshold", config.trading.buy_threshold))
+            config.trading.sell_threshold = float(changes.get("sell_threshold", config.trading.sell_threshold))
+            config.trading.forward_window_days = int(changes.get("forward_window_days", config.trading.forward_window_days))
+            st.sidebar.success("Applied saved config to runtime. Re-run analysis.")
+        except Exception as _:
+            st.sidebar.error("Failed to apply saved config.")
 
 
 if __name__ == "__main__":
