@@ -19,9 +19,11 @@ python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
-# Optional: .env with API keys
+# Optional: .env with API keys (see Environment Variables below)
 echo "OPENAI_API_KEY=..." >> .env
 echo "FINANCIAL_DATASETS_API_KEY=..." >> .env
+echo "LANGCHAIN_API_KEY=..." >> .env
+echo "LANGCHAIN_PROJECT=antipodes-agents" >> .env
 
 # Run UI
 streamlit run streamlit_app.py
@@ -42,6 +44,44 @@ python main.py --as-of-date 2025-04-01 --verbose
 Note on keys and privacy
 - Do not commit your `.env` file; this repo’s `.gitignore` is set to ignore it.
 - LLM features (report/optimizer) require `OPENAI_API_KEY`. Without it, LLM options are disabled in the UI.
+- Live price data requires `FINANCIAL_DATASETS_API_KEY`; otherwise the app uses `data/fallback_prices.csv`.
+- Optional LangSmith tracing supports LangGraph/LangChain observability with `LANGCHAIN_API_KEY` and `LANGCHAIN_PROJECT`.
+
+## Environment Variables (.env)
+
+Environment is loaded via `pydantic-settings` and `python-dotenv`. Create a local `.env` in the project root.
+
+- OPENAI_API_KEY
+  - Used by: `src/llm/reporting.py`, `src/llm/optimizer.py`
+  - Purpose: Enables LLM Performance Report and LLM Optimizer
+  - If missing: LLM features are disabled (UI toggle is off)
+
+- FINANCIAL_DATASETS_API_KEY
+  - Used by: `src/data_loader.py` via `src/config.py`
+  - Purpose: Fetches live price data from `https://api.financialdatasets.ai`
+  - If missing: Uses fallback CSV at `data/fallback_prices.csv`
+
+- LANGCHAIN_API_KEY (optional)
+  - Used by: `src/config.py` for LangSmith tracing
+  - Purpose: Enable observability/tracing for LangGraph/LangChain runs
+
+- LANGCHAIN_PROJECT (optional)
+  - Default: `antipodes-agents`
+  - Purpose: Group traces under a project in LangSmith
+
+Example `.env`:
+
+```bash
+# LLM (required for LLM features)
+OPENAI_API_KEY=sk-...
+
+# Live market data (optional; fallback CSV used if unset)
+FINANCIAL_DATASETS_API_KEY=fd-...
+
+# LangSmith tracing (optional)
+LANGCHAIN_API_KEY=ls-...
+LANGCHAIN_PROJECT=antipodes-agents
+```
 
 ## Data Sources & Quality Controls
 
