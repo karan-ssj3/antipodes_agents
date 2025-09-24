@@ -8,6 +8,15 @@ Built a sophisticated multi-agent framework that mirrors real investment committ
 
 ---
 
+# What’s New (UI + LLM + Experiments)
+
+- Streamlit UI (`streamlit_app.py`) to run the whole workflow interactively
+- LLM Performance Report: generates `outputs/performance_report.md` with grounded attribution
+- LLM Optimizer: proposes parameter changes (weights/thresholds/window) as JSON
+- Rolling A/B Experiments: compare Baseline vs Variant across multiple dates
+- Per‑ticker Attribution CSV: `outputs/attribution.csv` with return and contribution
+- Config Versioning: save promoted configs to `outputs/experiments/configs/` and roll back via UI
+
 # PART I: CURRENT IMPLEMENTATION
 
 ## System Architecture
@@ -293,8 +302,14 @@ pip install -r requirements.txt
 
 # Optional environment variables
 export FINANCIAL_DATASETS_API_KEY=your_key_here  # For live price data
-export OPENAI_API_KEY=your_key_here              # For future LLM features  
-export LANGCHAIN_API_KEY=your_key_here           # For workflow monitoring
+export OPENAI_API_KEY=your_key_here              # For LLM report/optimizer in the UI
+export LANGCHAIN_API_KEY=your_key_here           # For workflow monitoring (optional)
+```
+
+Alternatively, create a `.env` at the repo root:
+```
+FINANCIAL_DATASETS_API_KEY=...
+OPENAI_API_KEY=...
 ```
 
 ### System Execution
@@ -316,12 +331,27 @@ python -m pytest tests/ -v              # Run all tests
 python tests/test_basic.py               # Individual test files
 ```
 
+### Streamlit UI (Recommended)
+```bash
+streamlit run streamlit_app.py
+```
+
+Sidebar controls:
+- Date, tickers, agent weights, forward window
+- Toggle LLM performance report (needs `OPENAI_API_KEY`)
+- Run and view tables, KPIs, chart, and download CSVs/PNG/MD
+- Optimizer: request suggestions (JSON) and Apply to runtime config
+- Rolling A/B: Baseline vs Variant across past months; export CSV; Promote Variant on uplift
+- Config Versions: load previously promoted configs and apply (rollback)
+
 ### Output Files Generated
 ```bash
 outputs/
 ├── picks.csv         # Agent ratings and final coordinator decisions
 ├── performance.csv   # Portfolio vs benchmark performance metrics
-└── chart.png        # Visual performance comparison chart
+├── chart.png         # Visual performance comparison chart
+├── attribution.csv   # Per-ticker returns and contributions
+└── performance_report.md  # LLM-generated markdown attribution (if enabled)
 ```
 
 ## Data Sources & Quality Controls
