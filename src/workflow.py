@@ -350,6 +350,25 @@ class AgentWorkflow:
             }
             
             print(f"  ✅ Generated 3 output files")
+
+            # Optionally generate LLM performance report if API key present
+            try:
+                from .config import config as _cfg
+                if _cfg.api.openai_api_key:
+                    from .llm.reporting import LLMBacktestReporter
+                    reporter = LLMBacktestReporter()
+                    md = reporter.generate_performance_report(
+                        state["backtest_result"],
+                        state["coordinator_results"],
+                        state["backtest_data"],  # use forward period market data for attribution
+                        state["as_of_date"],
+                    )
+                    report_path = reporter.save_report(md)
+                    state["output_files"]["llm_report"] = report_path
+                    print("  ✅ Generated LLM performance report")
+            except Exception as _e:
+                # Do not fail workflow on LLM/reporting errors
+                state["errors"].append(f"LLM report generation failed: {_e}")
             
         except Exception as e:
             state["errors"].append(f"Output generation failed: {e}")
