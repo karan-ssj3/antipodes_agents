@@ -341,15 +341,19 @@ class AgentWorkflow:
             portfolio_positions = backtest_engine._create_portfolio_positions(state["coordinator_results"])
             
             chart_file = generator.generate_chart(state["backtest_result"], portfolio_positions)
+            attrib_file = generator.generate_attribution_csv(
+                state["backtest_data"], state["as_of_date"], portfolio_positions
+            )
             
             # Update state with file paths
             state["output_files"] = {
                 "picks": picks_file,
                 "performance": performance_file,
-                "chart": chart_file
+                "chart": chart_file,
+                "attribution": attrib_file,
             }
             
-            print(f"  ✅ Generated 3 output files")
+            print(f"  ✅ Generated 4 output files")
 
             # Optionally generate LLM performance report if API key present
             try:

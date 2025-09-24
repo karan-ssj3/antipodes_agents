@@ -124,6 +124,26 @@ class BacktestEngine:
             total_return += weighted_return
             
         return total_return
+
+    def calculate_attribution(self,
+                               positions: List[PortfolioPosition],
+                               market_data: MarketData,
+                               start_date: date,
+                               end_date: date) -> List[Dict[str, float]]:
+        """Return per-ticker return and contribution based on current weights."""
+        rows: List[Dict[str, float]] = []
+        for position in positions:
+            ticker_ret = self._calculate_ticker_return(position.ticker, market_data, start_date, end_date)
+            contribution = ticker_ret * position.weight
+            rows.append({
+                'ticker': position.ticker,
+                'weight': position.weight,
+                'return': ticker_ret,
+                'contribution': contribution,
+            })
+        # Sort by contribution descending
+        rows.sort(key=lambda r: r['contribution'], reverse=True)
+        return rows
     
     def _calculate_benchmark_return(self,
                                    market_data: MarketData,
@@ -296,3 +316,19 @@ class OutputGenerator:
         
         print(f"✅ Generated {chart_file}")
         return str(chart_file)
+
+    def generate_attribution_csv(self,
+                                 market_data: MarketData,
+                                 as_of_date: date,
+                                 positions: List[PortfolioPosition]) -> str:
+        """Generate per-ticker attribution CSV for the forward window."""
+        engine = BacktestEngine()
+        start = as_of_date + timedelta(days=1)
+        end = as_of_date + timedelta(days=config.trading.forward_window_days)
+
+        rows = engine.calculate_attribution(positions, market_data, start, end)
+        df = pd.DataFrame(rows)
+        file_path = self.output_dir / "attribution.csv"
+        df.to_csv(file_path, index=False)
+        print(f"✅ Generated {file_path}")
+        return str(file_path)

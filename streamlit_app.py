@@ -75,6 +75,15 @@ def _render_results(final_state: dict) -> None:
     with st.expander("Generated files"):
         for name, path in output_files.items():
             st.write(f"{name}: {path}")
+        # Offer downloads when available
+        for key in ("picks", "performance", "attribution"):
+            p = output_files.get(key)
+            if p and Path(p).exists():
+                try:
+                    data = Path(p).read_bytes()
+                    st.download_button(label=f"Download {key}.csv", data=data, file_name=Path(p).name)
+                except Exception:
+                    pass
 
 
 def _collect_recent_performance() -> dict:
