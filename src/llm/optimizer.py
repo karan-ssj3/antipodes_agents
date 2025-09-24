@@ -43,6 +43,7 @@ class LLMOptimizer:
         completion = self.client.chat.completions.create(
             model=self.model,
             temperature=0.1,
+            response_format={"type": "json_object"},
             messages=[
                 {"role": "system", "content": "Respond with JSON only, no prose."},
                 {"role": "user", "content": f"{prompt}\n\nContext: {context}"},
@@ -50,11 +51,26 @@ class LLMOptimizer:
         )
 
         raw = completion.choices[0].message.content or "{}"
+        # Remove common code-fence wrappers if present
+        def _strip_code_fences(text: str) -> str:
+            t = text.strip()
+            if t.startswith("```"):
+                t = t.lstrip("`")
+                # remove optional language tag like json\n
+                if "\n" in t:
+                    first_nl = t.find("\n")
+                    t = t[first_nl + 1 :]
+                # remove trailing fences
+                if t.endswith("```"):
+                    t = t[: -3]
+            return t.strip()
+
+        cleaned = _strip_code_fences(raw)
         # Basic guard: ensure we return a dict
         try:
             import json
 
-            parsed = json.loads(raw)
+            parsed = json.loads(cleaned)
             if not isinstance(parsed, dict):
                 return {"error": "Non-dict response", "raw": raw}
             return parsed
