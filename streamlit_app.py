@@ -246,10 +246,31 @@ def main() -> None:
                 avg_uplift = comp["uplift_active_return"].mean()
                 st.metric("Average uplift (active return)", f"{avg_uplift:.2%}")
 
-                if avg_uplift >= uplift_threshold:
-                    st.success("Variant meets uplift threshold. You may consider promoting these params.")
+                # Export CSV
+                try:
+                    csv_bytes = comp.reset_index().to_csv(index=False).encode()
+                    st.download_button("Download A/B results CSV", data=csv_bytes, file_name="ab_results.csv")
+                except Exception:
+                    pass
+
+                # Promote variant if threshold met
+                if avg_uplift >= uplift_threshold and changes:
+                    if st.button("Promote Variant (apply params)"):
+                        try:
+                            # Apply same logic as optimizer apply
+                            config.trading.valuation_weight = float(changes.get("valuation_weight", config.trading.valuation_weight))
+                            config.trading.sentiment_weight = float(changes.get("sentiment_weight", config.trading.sentiment_weight))
+                            config.trading.fundamental_weight = float(changes.get("fundamental_weight", config.trading.fundamental_weight))
+                            config.trading.buy_threshold = float(changes.get("buy_threshold", config.trading.buy_threshold))
+                            config.trading.sell_threshold = float(changes.get("sell_threshold", config.trading.sell_threshold))
+                            config.trading.forward_window_days = int(changes.get("forward_window_days", config.trading.forward_window_days))
+                            st.success("Variant promoted to runtime config. Re-run analysis to evaluate.")
+                        except Exception:
+                            st.error("Failed to promote variant.")
+                elif not changes:
+                    st.info("No variant changes provided.")
                 else:
-                    st.info("Variant did not meet uplift threshold.")
+                    st.info("Variant did not meet uplift threshold; not promoting.")
 
             except Exception as e:
                 st.error(f"A/B run failed: {e}")
