@@ -22,6 +22,7 @@ sys.path.append(str(_Path(__file__).parent / "src"))
 from src.workflow import AgentWorkflow
 from src.config import config
 from src.models import CoordinatorResult
+from src.experiments.ab_runner import VariantConfig, run_rolling_ab
 
 
 def _run_workflow(as_of_date: date) -> dict:
@@ -200,6 +201,58 @@ def main() -> None:
     if st.session_state.get("last_suggestion"):
         st.write("Last suggestion:")
         st.json(st.session_state["last_suggestion"])
+
+    st.divider()
+    st.subheader("A/B Experiments (rolling)")
+    st.caption("Compare baseline vs variant across multiple decision dates.")
+    with st.expander("Run A/B"):
+        c1, c2 = st.columns(2)
+        with c1:
+            lookback_months = st.number_input("Number of past months (decision dates)", value=3, min_value=1, max_value=24)
+            uplift_threshold = st.number_input("Promote if average active return uplift >=", value=0.005, step=0.001, format="%.3f")
+        with c2:
+            use_last_suggestion = st.toggle("Use last optimizer suggestion as Variant B", value=True)
+
+        baseline = VariantConfig(name="Baseline", values={})
+        if use_last_suggestion and st.session_state.get("last_suggestion"):
+            changes = st.session_state["last_suggestion"].get("changes", {})
+        else:
+            changes = {}
+        variant = VariantConfig(name="Variant", values=changes)
+
+        if st.button("Run rolling A/B"):
+            try:
+                # build recent monthly dates ending at chosen as_of_date
+                end_date = as_of_date
+                dates = []
+                for i in range(int(lookback_months)):
+                    # pick the 1st of each prior month for determinism
+                    month = (end_date.month - i - 1) % 12 + 1
+                    year = end_date.year + ((end_date.month - i - 1) // 12)
+                    d = date(year, month, 1)
+                    dates.append(d)
+                dates = sorted(list(set(dates)))
+
+                with st.spinner("Running A/B experiments..."):
+                    res = run_rolling_ab(dates, baseline, variant)
+
+                import pandas as pd
+                df_a = pd.DataFrame(res["A"]).set_index("date")
+                df_b = pd.DataFrame(res["B"]).set_index("date")
+                comp = pd.concat({"A": df_a, "B": df_b}, axis=1)
+                comp["uplift_active_return"] = comp["B"]["active_return"] - comp["A"]["active_return"]
+                st.dataframe(comp.reset_index(), width='stretch')
+
+                avg_uplift = comp["uplift_active_return"].mean()
+                st.metric("Average uplift (active return)", f"{avg_uplift:.2%}")
+
+                if avg_uplift >= uplift_threshold:
+                    st.success("Variant meets uplift threshold. You may consider promoting these params.")
+                else:
+                    st.info("Variant did not meet uplift threshold.")
+
+            except Exception as e:
+                st.error(f"A/B run failed: {e}")
 
     st.sidebar.caption("Tip: Results also saved under outputs/ as CSV/PNG")
 
