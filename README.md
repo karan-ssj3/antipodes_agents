@@ -41,6 +41,26 @@ python main.py --as-of-date 2025-04-01 --verbose
 ## Detailed Docs and Roadmap
 - See `docs/overview.md` for architecture, agent logic, backtest details, LLM features, experiments, and roadmap
 
+## Deploy to LangGraph Platform (Cloud)
+
+Prereqs: GitHub repo + LangSmith account.
+
+1) Files included for deployment
+- `app.py` exposes `graph` (LangGraph entrypoint)
+- `langgraph.json` defines assistant `agent` with input `{ as_of_date: YYYY-MM-DD }`
+
+2) Deploy
+- Login to LangSmith → Deployments → New Deployment
+- Select this GitHub repo, entrypoint `app:graph`
+
+3) Test via SDK
+```python
+from langgraph_sdk import get_client
+client = get_client(url="<deployment-url>", api_key="<LANGSMITH_API_KEY>")
+async for chunk in client.runs.stream(None, "agent", input={"as_of_date": "2025-07-01"}, stream_mode="updates"):
+    print(chunk.event, chunk.data)
+```
+
 Note on keys and privacy
 - Do not commit your `.env` file; this repo’s `.gitignore` is set to ignore it.
 - LLM features (report/optimizer) require `OPENAI_API_KEY`. Without it, LLM options are disabled in the UI.

@@ -1,0 +1,19 @@
+{
+  "name": "antipodes-agents",
+  "entrypoint": "app:graph",
+  "assistants": [
+    {
+      "name": "agent",
+      "description": "Runs the Antipodes multi-agent workflow",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "as_of_date": { "type": "string", "description": "Decision date YYYY-MM-DD" }
+        },
+        "required": ["as_of_date"]
+      }
+    }
+  ]
+}
+
+
