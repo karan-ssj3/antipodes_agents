@@ -39,6 +39,10 @@ python main.py --as-of-date 2025-04-01 --verbose
 ## Detailed Docs and Roadmap
 - See `docs/overview.md` for architecture, agent logic, backtest details, LLM features, experiments, and roadmap
 
+Note on keys and privacy
+- Do not commit your `.env` file; this repo’s `.gitignore` is set to ignore it.
+- LLM features (report/optimizer) require `OPENAI_API_KEY`. Without it, LLM options are disabled in the UI.
+
 ## Data Sources & Quality Controls
 
 ### Price Data Pipeline

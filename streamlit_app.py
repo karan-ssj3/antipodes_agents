@@ -133,7 +133,10 @@ def main() -> None:
         fwd = st.number_input("Forward window (days)", value=int(config.trading.forward_window_days), min_value=7, max_value=365, step=1)
 
         st.divider()
-        llm_report_toggle = st.toggle("Generate LLM performance report (uses OpenAI API)", value=True)
+        llm_key_present = bool(config.api.openai_api_key)
+        llm_report_toggle = st.toggle("Generate LLM performance report (uses OpenAI API)", value=True, disabled=not llm_key_present)
+        if not llm_key_present:
+            st.caption("OPENAI_API_KEY not set (.env). LLM features are disabled.")
         run_btn = st.button("Run Analysis", type="primary")
 
     # Apply sidebar config overrides
