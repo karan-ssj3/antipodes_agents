@@ -15,6 +15,7 @@ from .agents.debate_coordinator import DebateCoordinator
 from .data_loader import FinancialDataLoader, NewsLoader, FundamentalLoader
 from .backtesting import BacktestEngine, OutputGenerator
 from .config import config
+import os
 
 
 class AgentWorkflowState(TypedDict):
@@ -46,6 +47,16 @@ class AgentWorkflow:
     """LangGraph-powered multi-agent trading workflow"""
     
     def __init__(self):
+        # Enable LangSmith tracing automatically if configured
+        try:
+            if config.api.langchain_api_key:
+                os.environ.setdefault("LANGCHAIN_TRACING_V2", "true")
+                os.environ.setdefault("LANGCHAIN_API_KEY", config.api.langchain_api_key)
+                if config.api.langchain_project:
+                    os.environ.setdefault("LANGCHAIN_PROJECT", config.api.langchain_project)
+        except Exception:
+            # Tracing is optional; ignore any env setup issues
+            pass
         self.workflow = self._build_workflow()
     
     def _build_workflow(self) -> StateGraph:
