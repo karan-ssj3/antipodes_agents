@@ -32,3 +32,6 @@ pytest-asyncio==0.21.1
 
 # CLI interface
 click==8.1.7
+
+# Web UI
+streamlit>=1.37.0

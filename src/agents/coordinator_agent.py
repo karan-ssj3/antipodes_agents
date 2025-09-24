@@ -72,11 +72,11 @@ class Coordinator(BaseAgent):
     def _calculate_final_rating(self, agent_ratings: Dict[str, AgentRating]) -> tuple[Rating, float]:
         """Calculate weighted final rating"""
         
-        # Convert ratings to numeric values
+        # Convert ratings to numeric values (0-1 scale for simplicity)
         rating_values = {
-            Rating.SELL: 0,
-            Rating.HOLD: 1, 
-            Rating.BUY: 2
+            Rating.SELL: 0.0,
+            Rating.HOLD: 0.5, 
+            Rating.BUY: 1.0
         }
         
         # Get weights from config
@@ -86,16 +86,16 @@ class Coordinator(BaseAgent):
             'fundamental': config.trading.fundamental_weight
         }
         
-        # Calculate weighted score
+        # Calculate weighted score (already in 0-1 range)
         weighted_sum = 0.0
         for agent_name, rating_obj in agent_ratings.items():
             numeric_rating = rating_values[rating_obj.rating]
             weight = weights[agent_name]
             weighted_sum += numeric_rating * weight
             
-        # Convert back to rating using config thresholds
-        buy_threshold = config.trading.buy_threshold * 2  # 0.7 * 2 = 1.4
-        sell_threshold = config.trading.sell_threshold * 2  # 0.3 * 2 = 0.6
+        # Use config thresholds directly (no multiplication needed)
+        buy_threshold = config.trading.buy_threshold    # 0.7
+        sell_threshold = config.trading.sell_threshold  # 0.3
         
         if weighted_sum >= buy_threshold:
             final_rating = Rating.BUY
@@ -104,8 +104,8 @@ class Coordinator(BaseAgent):
         else:
             final_rating = Rating.HOLD
             
-        # Final score is the weighted average normalized to 0-1
-        final_score = weighted_sum / 2.0
+        # Final score is already in 0-1 range (no division needed)
+        final_score = weighted_sum
         
         return final_rating, final_score
     

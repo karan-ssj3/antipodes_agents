@@ -69,7 +69,7 @@ class SentimentAgent(BaseAgent):
         """Calculate weighted sentiment score"""
         
         if not news_items:
-            return 0.0  # Neutral if no news
+            return 0.0  
             
         weighted_scores = []
         

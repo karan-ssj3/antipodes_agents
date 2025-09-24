@@ -383,8 +383,8 @@ class FundamentalLoader:
     
     def load_fundamental_data(self) -> List[FundamentalData]:
         """Load hand-curated fundamental data"""
-        # We'll implement this in the next phase
-        # For now, return sample data
+        # 
+        
         return [
     FundamentalData(
         ticker="AAPL",
