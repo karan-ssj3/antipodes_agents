@@ -724,6 +724,9 @@ def test_robustness(as_of_date: datetime):
     
     print(f"\n✅ Robustness testing completed")
 
+
+    
+
 if __name__ == "__main__":
     # If run with no arguments, run main command with defaults
     if len(sys.argv) == 1:

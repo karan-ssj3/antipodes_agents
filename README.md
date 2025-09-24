@@ -41,31 +41,11 @@ python main.py --as-of-date 2025-04-01 --verbose
 ## Detailed Docs and Roadmap
 - See `docs/overview.md` for architecture, agent logic, backtest details, LLM features, experiments, and roadmap
 
-## Deploy to LangGraph Platform (Cloud)
-
-Prereqs: GitHub repo + LangSmith account.
-
-1) Files included for deployment
-- `app.py` exposes `graph` (LangGraph entrypoint)
-- `langgraph.json` defines assistant `agent` with input `{ as_of_date: YYYY-MM-DD }`
-
-2) Deploy
-- Login to LangSmith → Deployments → New Deployment
-- Select this GitHub repo, entrypoint `app:graph`
-
-3) Test via SDK
-```python
-from langgraph_sdk import get_client
-client = get_client(url="<deployment-url>", api_key="<LANGSMITH_API_KEY>")
-async for chunk in client.runs.stream(None, "agent", input={"as_of_date": "2025-07-01"}, stream_mode="updates"):
-    print(chunk.event, chunk.data)
-```
-
 Note on keys and privacy
 - Do not commit your `.env` file; this repo’s `.gitignore` is set to ignore it.
 - LLM features (report/optimizer) require `OPENAI_API_KEY`. Without it, LLM options are disabled in the UI.
 - Live price data requires `FINANCIAL_DATASETS_API_KEY`; otherwise the app uses `data/fallback_prices.csv`.
-- Optional LangSmith tracing supports LangGraph/LangChain observability with `LANGCHAIN_API_KEY` and `LANGCHAIN_PROJECT`.
+- Optional LangSmith tracing supports LangGraph/LangChain observability with `LANGCHAIN_API_KEY` and `LANGCHAIN_PROJECT`. (Not required; disabled by default.)
 
 ## Environment Variables (.env)
 
@@ -82,8 +62,7 @@ Environment is loaded via `pydantic-settings` and `python-dotenv`. Create a loca
   - If missing: Uses fallback CSV at `data/fallback_prices.csv`
 
 - LANGCHAIN_API_KEY (optional)
-  - Used by: `src/config.py` for LangSmith tracing
-  - Purpose: Enable observability/tracing for LangGraph/LangChain runs
+  - Purpose: Enable observability/tracing for LangGraph/LangChain runs (if you enable it yourself)
 
 - LANGCHAIN_PROJECT (optional)
   - Default: `antipodes-agents`
@@ -98,11 +77,11 @@ OPENAI_API_KEY=sk-...
 # Live market data (optional; fallback CSV used if unset)
 FINANCIAL_DATASETS_API_KEY=fd-...
 
-# LangSmith tracing (optional)
-# Enable v2 tracing by default if key is present
-LANGCHAIN_TRACING_V2=true
-LANGCHAIN_API_KEY=ls-...
-LANGCHAIN_PROJECT=antipodes-agents
+# LangSmith tracing (optional; disabled by default)
+# To enable, set the following and configure in your runtime:
+# LANGCHAIN_TRACING_V2=true
+# LANGCHAIN_API_KEY=ls-...
+# LANGCHAIN_PROJECT=antipodes-agents
 ```
 
 ## Data Sources & Quality Controls
