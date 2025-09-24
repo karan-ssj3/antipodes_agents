@@ -19,7 +19,8 @@ class LLMBacktestReporter:
 
     def __init__(self, model: str | None = None, output_dir: str = "outputs"):
         self.model = model or "gpt-4o-mini"
-        self.client = OpenAI()
+        # Pass API key explicitly to avoid relying only on environment propagation
+        self.client = OpenAI(api_key=config.api.openai_api_key)
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
 

@@ -11,6 +11,8 @@ from pathlib import Path
 from typing import List
 
 import streamlit as st
+from dotenv import load_dotenv
+load_dotenv()  # Ensure OPENAI_API_KEY from .env is available to config
 
 # Make sure we can import from src
 import sys

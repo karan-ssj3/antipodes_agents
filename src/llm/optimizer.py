@@ -16,7 +16,7 @@ class LLMOptimizer:
 
     def __init__(self, model: str | None = None):
         self.model = model or "gpt-4o-mini"
-        self.client = OpenAI()
+        self.client = OpenAI(api_key=config.api.openai_api_key)
 
     def optimize_parameters(self, recent_performance: Dict[str, Any], market_context: Dict[str, Any]) -> Dict[str, Any]:
         prompt = (
